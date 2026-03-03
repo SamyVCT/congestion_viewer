@@ -39,7 +39,7 @@ if __name__ == "__main__":
     output_path = os.path.join("public", "forecast.json")
     
     # Ensure public directory exists
-    os.makedirs("public", exist_ok=True)
+    os.makedirs("react_app/public", exist_ok=True)
     
     with open(output_path, "w") as f:
         json.dump(data, f, indent=2)
