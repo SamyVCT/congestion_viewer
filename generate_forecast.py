@@ -1,6 +1,7 @@
 import json
 import random # Replace with your model/ENTSOE imports
 import os
+from preprocess_forecast import process_forecasts
 
 def run_inference():
     """
@@ -32,16 +33,17 @@ def run_inference():
     return forecast_data
 
 if __name__ == "__main__":
-    data = run_inference()
+    # data = run_inference() 
+    # #should dump the output of the model in predictions folder as csv, then process it with preprocess_forecast.py
     
-    # We save this directly into the React 'public' folder 
-    # so it gets served automatically as a static file.
-    output_path = os.path.join("public", "forecast.json")
+    data = process_forecasts("predictions") 
     
-    # Ensure public directory exists
-    os.makedirs("react_app/public", exist_ok=True)
+    output_path= "react_app/public"
+    os.makedirs(output_path, exist_ok=True)
+    output_path = os.path.join(output_path, "forecast.json")
     
     with open(output_path, "w") as f:
-        json.dump(data, f, indent=2)
+        json.dump(data, f)
         
+    print(f"Processed {len(data)} records. Saved to {output_path}")
     print(f"Successfully generated forecast and saved to {output_path}")
