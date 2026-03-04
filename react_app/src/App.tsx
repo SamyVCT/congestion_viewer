@@ -94,7 +94,21 @@ export default function App() {
   //   const scaleFactor = 1.2; // Adjust this to make all lines thicker/thinner
   //   return Math.pow(absMw, 0.44) * scaleFactor;
   // };
-  
+  const getErrorSeverity = (d: FlowData, horizonIdx: number) => {
+    const pred = Math.abs(d.y_pred[horizonIdx]);
+    const real = Math.abs(d.y_true[horizonIdx]);
+    
+    const absError = Math.abs(pred - real);
+    const relError = absError / (real + 10); // +10 to prevent infinity on zero-flow lines
+
+    // Thresholds: High error if >100MW AND >20% relative error
+    // This prevents tiny 5MW fluctuations from looking like "Critical" errors
+    if (absError > 50 && relError > 0.2) {
+      return Math.min(relError, 1); // Cap at 1 for color scaling
+    }
+    return 0;
+  };
+
   const getHybridWidth = (mw: number, edgeId: string) => {
     const absMw = Math.abs(mw);
     const edgeMax = edgeMaxMap[edgeId] || 1;
@@ -145,8 +159,33 @@ export default function App() {
       getHeight: 0.6, // Higher arc to avoid z-fighting
       pickable: true,
       autoHighlight: true
+    }),
+    new ArcLayer({
+      id: 'error-halo',
+      data: currentData,
+      getSourcePosition: d => getFlowProps(d, false).sourcePos,
+      getTargetPosition: d => getFlowProps(d, false).targetPos,
+      
+      // Only show if error is high
+      visible: true,
+      getWidth: d => {
+        const severity = getErrorSeverity(d, selectedHorizon - 1);
+        return severity > 0 ? getHybridWidth(getFlowProps(d, false).flow, `${d.source}-${d.target}`) : 0;
+      },
+      
+      // Bright Red/Neon Orange Glow
+      getSourceColor: [255, 50, 50, 40],
+      getTargetColor: [255, 0, 0, 120],
+      // Place it between the two arcs or slightly below
+      getHeight: 0.15,
+      // Makes the line look like a blurry glow
+      antialiasing: true,
+      
+      // Optional: Add a pulsing effect using the 'timer' we discussed earlier
+      // opacity: 0.5 + Math.sin(timer / 5) * 0.5,
     })
-  ];
+];
+  
 
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>

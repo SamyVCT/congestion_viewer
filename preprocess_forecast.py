@@ -10,7 +10,7 @@ COORDS = {
     "Sicilia": [14.0154, 37.5990],
     "Southern-Italy": [16.0, 40.5], # Naples area approx
     "Central-northern Italy": [11.2558, 43.7696], # Florence approx
-    "Centeral-southern Italy": [12.4964, 41.9028], # Rome approx
+    "Centeral-southern Italy": [13.4964, 41.9028], # Rome approx
     "North": [9.3900, 45.4642], # Milan approx
     "Sardegna": [8.9736, 40.1209],
     "MT": [14.3754, 35.9375], # Malta
