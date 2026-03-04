@@ -99,11 +99,11 @@ export default function App() {
     const real = Math.abs(d.y_true[horizonIdx]);
     
     const absError = Math.abs(pred - real);
-    const relError = absError / (real + 10); // +10 to prevent infinity on zero-flow lines
+    const relError = absError / (real + 1); // +1 to prevent infinity on zero-flow lines
 
-    // Thresholds: High error if >100MW AND >20% relative error
+    // Thresholds: High error if >30MW AND >20% relative error
     // This prevents tiny 5MW fluctuations from looking like "Critical" errors
-    if (absError > 50 && relError > 0.2) {
+    if (absError > 30 && relError > 0.2) {
       return Math.min(relError, 1); // Cap at 1 for color scaling
     }
     return 0;
