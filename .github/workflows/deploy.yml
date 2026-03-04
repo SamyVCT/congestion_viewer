@@ -22,13 +22,15 @@ jobs:
           node-version: '20'
 
       - name: Install Dependencies
+        working-directory: ./react_app
         run: npm install
 
       - name: Build Project
+        working-directory: ./react_app
         run: npm run build
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist # Change to 'build' if you are using Create React App (CRA)
+          folder: react_app/dist # Change to 'build' if you are using Create React App (CRA)
           branch: gh-pages # The branch the action will deploy to
