@@ -39,10 +39,20 @@ export default function App() {
   const [selectedHour, setSelectedHour] = useState<number>(1);
   const [selectedHorizon, setSelectedHorizon] = useState<number>(1); // 1 to 6
 
+  const [edgeMaxMap, setEdgeMaxMap] = useState<Record<string, number>>({});
   useEffect(() => {
     fetch('/forecast.json')
       .then(res => res.json())
       .then((json: FlowData[]) => {
+        const maxMap: Record<string, number> = {};
+        json.forEach(d => {
+          const edgeId = `${d.source}-${d.target}`;
+          // Find max value across all 6 horizons in y_true and y_pred
+          const localMax = Math.max(...d.y_true.map(Math.abs), ...d.y_pred.map(Math.abs));
+          maxMap[edgeId] = Math.max(maxMap[edgeId] || 0, localMax);
+        });
+        
+        setEdgeMaxMap(maxMap);
         setData(json);
         const dates = Array.from(new Set(json.map(d => d.date))).sort();
         setAvailableDates(dates);
@@ -74,15 +84,31 @@ export default function App() {
     };
   };
 
-  // Helper function for visual scaling
-  const getScaledWidth = (mw: number) => {
-    const absMw = Math.abs(mw);
-    if (absMw < 5) return 0.5; // Minimum "thread" for tiny flows
+  // Helper function for visual scaling : not bad but meeh
+  // const getScaledWidth = (mw: number) => {
+  //   const absMw = Math.abs(mw);
+  //   if (absMw < 5) return 0.5; // Minimum "thread" for tiny flows
     
-    // Power scale: x^0.35
-    // This squashes 6000 MW significantly but keeps 50 MW vs 200 MW distinct
-    const scaleFactor = 2; // Adjust this to make all lines thicker/thinner
-    return Math.pow(absMw, 0.4) * scaleFactor;
+  //   // Power scale: x^0.35
+  //   // This squashes 6000 MW significantly but keeps 50 MW vs 200 MW distinct
+  //   const scaleFactor = 1.2; // Adjust this to make all lines thicker/thinner
+  //   return Math.pow(absMw, 0.44) * scaleFactor;
+  // };
+  
+  const getHybridWidth = (mw: number, edgeId: string) => {
+    const absMw = Math.abs(mw);
+    const edgeMax = edgeMaxMap[edgeId] || 1;
+    
+    // 1. GLOBAL: Aggressive power scale (x^0.25)
+    // This squashes the 6000MW down so it doesn't cover the map.
+    const globalBase = Math.pow(absMw, 0.36) * 1.5;
+
+    // 2. LOCAL: Linear percentage of this edge's max
+    // This ensures that even in a 50MW line, a 5MW change is VISIBLE.
+    // We give this a weight (e.g., 3 pixels of "growth room").
+    const localEvolution = (absMw / edgeMax) * 4;
+
+    return globalBase + localEvolution;
   };
 
   const layers = [
@@ -95,7 +121,7 @@ export default function App() {
       // Fades from transparent to solid to show direction
       getSourceColor: [50, 200, 50, 30], 
       getTargetColor: [50, 200, 50, 255],
-      getWidth: (d: FlowData) => {const flow = getFlowProps(d, false).flow; return getScaledWidth(flow);},
+      getWidth: (d: FlowData) => {const props = getFlowProps(d, false); return getHybridWidth(props.flow, `${d.source}-${d.target}`);},
       // widthMinPixels: 1,  // Never invisible
       // widthMaxPixels: 50, // Never overwhelming
       widthUnits: 'pixels',
@@ -112,7 +138,7 @@ export default function App() {
       getTargetPosition: (d: FlowData) => getFlowProps(d, true).targetPos,
       getSourceColor: [50, 150, 255, 30],
       getTargetColor: [50, 150, 255, 255],
-      getWidth: (d: FlowData) => {const flow = getFlowProps(d, true).flow; return getScaledWidth(flow);},
+      getWidth: (d: FlowData) => {const props = getFlowProps(d, true); return getHybridWidth(props.flow, `${d.source}-${d.target}`);},
       // widthMinPixels: 1,  // Never invisible
       // widthMaxPixels: 15, // Never overwhelming
       widthUnits: 'pixels',
