@@ -40,8 +40,9 @@ export default function App() {
   const [selectedHorizon, setSelectedHorizon] = useState<number>(1); // 1 to 6
 
   const [edgeMaxMap, setEdgeMaxMap] = useState<Record<string, number>>({});
+  const forecastUrl = `${import.meta.env.BASE_URL}forecast.json`;
   useEffect(() => {
-    fetch('/forecast.json')
+    fetch(forecastUrl)
       .then(res => res.json())
       .then((json: FlowData[]) => {
         const maxMap: Record<string, number> = {};
