@@ -250,9 +250,13 @@ export default function App() {
             <div style={{ width: 15, height: 15, background: 'rgb(50, 200, 50)', marginRight: 10 }}></div>
             True Flow (Lower Arc)
           </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5 }}>
             <div style={{ width: 15, height: 15, background: 'rgb(50, 150, 255)', marginRight: 10 }}></div>
             Predicted Flow (Higher Arc)
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 5 }}>
+            <div style={{ width: 15, height: 15, background: 'rgb(255, 50, 50)', marginRight: 10 }}></div>
+            Relative error {'>'}20%
           </div>
           <p style={{ color: '#aaa', fontSize: '0.8rem', marginTop: 10 }}>
             * Gradients indicate flow direction (transparent source to solid target).
